@@ -1,0 +1,13 @@
+{
+  "name": "Padel",
+  "short_name": "Padel",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0a0e0a",
+  "theme_color": "#0a0e0a",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

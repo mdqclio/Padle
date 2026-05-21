@@ -42,6 +42,13 @@ De la diferencia salen los balances:
 1. *Settings → Pages → Source: Deploy from a branch → `main` / `(root)`*.
 2. Guardar. En ~1 min queda en `https://<usuario>.github.io/<repo>/`.
 
+### 3. Instalar como app (PWA)
+
+- **iPhone**: abrí la URL en **Safari** (no Chrome — en iOS sólo Safari instala PWAs) → botón Compartir → *Agregar a pantalla de inicio*.
+- **Android**: menú del navegador → *Instalar app* (o *Agregar a pantalla de inicio*).
+
+Una vez instalada se abre fullscreen sin barra del navegador, con su ícono propio y sigue funcionando aunque pierdas señal momentáneamente (gracias al service worker).
+
 ## Estructura de datos (RTDB)
 
 ```
