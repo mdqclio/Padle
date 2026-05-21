@@ -499,13 +499,13 @@ input:focus { border-color: var(--accent); }
 // FIREBASE CONFIG — pegá tus valores acá
 // ============================================================
 const firebaseConfig = {
-  apiKey:            "PEGAR_ACA",
-  authDomain:        "PEGAR_ACA",
-  databaseURL:       "PEGAR_ACA",
-  projectId:         "PEGAR_ACA",
-  storageBucket:     "PEGAR_ACA",
-  messagingSenderId: "PEGAR_ACA",
-  appId:             "PEGAR_ACA"
+  apiKey:            "AIzaSyByAm5fYGw6ANbbcGT9ur5VBqVeVa4KDqc",
+  authDomain:        "padle-82f32.firebaseapp.com",
+  databaseURL:       "https://padle-82f32-default-rtdb.firebaseio.com",
+  projectId:         "padle-82f32",
+  storageBucket:     "padle-82f32.firebasestorage.app",
+  messagingSenderId: "445228755068",
+  appId:             "1:445228755068:web:3b33feee774ad39c8f01f9"
 };
 
 const DEFAULT_JUGADORES = [
@@ -515,27 +515,6 @@ const DEFAULT_JUGADORES = [
   "JuGar", "Marcelo Di Perna", "Mariano Monjeau", "Mario de Funes",
   "Mario Sánchez", "Pedro", "Sergio Berlingieri"
 ];
-
-// Bail out early if config not pasted yet
-if (firebaseConfig.apiKey === "PEGAR_ACA") {
-  document.body.innerHTML = `
-    <div class="config-warn">
-      <h1>Falta configurar Firebase</h1>
-      <p>Pegá tu <code>firebaseConfig</code> en <code>index.html</code> (buscá <code>PEGAR_ACA</code>).</p>
-      <p>Lo conseguís en Firebase Console → Project settings → General → Your apps → Web app.</p>
-      <p>Después aplicá las reglas de <code>firebase-rules.json</code> en Database → Rules.</p>
-      <pre>const firebaseConfig = {
-  apiKey:            "AIza...",
-  authDomain:        "tu-proyecto.firebaseapp.com",
-  databaseURL:       "https://tu-proyecto-default-rtdb.firebaseio.com",
-  projectId:         "tu-proyecto",
-  storageBucket:     "tu-proyecto.appspot.com",
-  messagingSenderId: "123456789",
-  appId:             "1:123456789:web:abc..."
-};</pre>
-    </div>`;
-  throw new Error("firebaseConfig placeholder — pegá los valores reales.");
-}
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
