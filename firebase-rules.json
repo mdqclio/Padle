@@ -1,0 +1,11 @@
+{
+  "rules": {
+    "jugadores": { ".read": true, ".write": true },
+    "turnos":    { ".read": true, ".write": true },
+    "devices":   { ".read": true, ".write": true },
+    "audit": {
+      ".read": true,
+      "$eventId": { ".write": "!data.exists()" }
+    }
+  }
+}

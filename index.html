@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0e0a">
+<title>Padel Turnos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+  --bg: #0a0e0a;
+  --card: #161b16;
+  --card-hi: #1c221c;
+  --border: #2a322a;
+  --text: #e8ede8;
+  --text-dim: #8a948a;
+  --accent: #a3e635;
+  --cyan: #22d3ee;
+  --gold: #fcd34d;
+  --danger: #ef4444;
+  --radius: 14px;
+}
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+}
+body { padding-bottom: 120px; }
+.display { font-family: 'Bricolage Grotesque', system-ui, sans-serif; }
+input, button, select, textarea { font-family: inherit; color: inherit; }
+button { cursor: pointer; }
+
+header {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(10,14,10,0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+header h1 {
+  font-family: 'Bricolage Grotesque';
+  font-size: 19px; font-weight: 700; flex: 1;
+  color: var(--accent);
+  letter-spacing: -0.01em;
+}
+.conn { width: 9px; height: 9px; border-radius: 50%; background: var(--danger); transition: background 0.3s; flex-shrink: 0; }
+.conn.online { background: var(--accent); box-shadow: 0 0 8px rgba(163,230,53,0.5); }
+#name-badge {
+  padding: 7px 13px; border-radius: 999px;
+  background: var(--card); border: 1px solid var(--border);
+  color: var(--text); font-size: 13px; font-weight: 500;
+  max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+nav.tabs {
+  display: flex; gap: 4px;
+  padding: 8px 12px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  position: sticky; top: 55px; z-index: 40;
+  scrollbar-width: none;
+}
+nav.tabs::-webkit-scrollbar { display: none; }
+nav.tabs button {
+  background: none; border: none;
+  color: var(--text-dim);
+  padding: 10px 14px;
+  font-size: 14px; font-weight: 500;
+  border-radius: 8px;
+  white-space: nowrap;
+  min-height: 44px;
+}
+nav.tabs button.active { background: var(--card); color: var(--accent); }
+
+main {
+  padding: 12px 12px 0;
+  max-width: 720px;
+  margin: 0 auto;
+}
+section[hidden] { display: none; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 10px;
+}
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-dim);
+  font-size: 15px;
+  line-height: 1.6;
+}
+.empty strong { color: var(--accent); font-weight: 700; }
+
+.fab {
+  position: fixed; bottom: 22px; right: 22px; z-index: 60;
+  background: var(--accent); color: #0a0e0a;
+  border: none; border-radius: 999px;
+  padding: 14px 22px;
+  font-family: 'Bricolage Grotesque'; font-weight: 700; font-size: 15px;
+  box-shadow: 0 8px 28px rgba(163,230,53,0.35);
+  min-height: 52px;
+}
+.fab[hidden] { display: none; }
+.fab:active { transform: scale(0.96); }
+
+/* Turno card */
+.turno { padding: 0; overflow: hidden; }
+.turno-head {
+  padding: 14px;
+  display: flex; align-items: center; gap: 8px;
+  cursor: pointer;
+  min-height: 60px;
+}
+.turno-date { flex: 1; min-width: 0; }
+.turno-date .day {
+  display: block; font-size: 11px; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 0.7px; font-weight: 500;
+}
+.turno-date .num {
+  font-family: 'Bricolage Grotesque'; font-size: 19px; font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.pill {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 4px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.pill-jug { background: rgba(163,230,53,0.15); color: var(--accent); }
+.pill-cred { background: rgba(34,211,238,0.15); color: var(--cyan); }
+.pill-deb { background: rgba(252,211,77,0.15); color: var(--gold); }
+
+.turno-body {
+  display: none;
+  padding: 0 14px 14px;
+  border-top: 1px solid var(--border);
+}
+.turno.open .turno-body { display: block; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+.chip {
+  padding: 6px 11px; border-radius: 8px;
+  font-size: 13px; font-weight: 500;
+  background: var(--card-hi); border: 1px solid var(--border);
+}
+.chip.cred { background: rgba(34,211,238,0.1); border-color: rgba(34,211,238,0.3); color: var(--cyan); }
+.chip.deb  { background: rgba(252,211,77,0.1); border-color: rgba(252,211,77,0.3); color: var(--gold); }
+.turno-actions { display: flex; gap: 8px; margin-top: 8px; }
+
+.btn {
+  background: var(--card-hi);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 11px 16px;
+  border-radius: 10px;
+  font-size: 14px; font-weight: 600;
+  min-height: 44px;
+  transition: transform 0.05s;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--accent); color: #0a0e0a; border-color: var(--accent); font-weight: 700; }
+.btn-danger  { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.35); color: var(--danger); }
+.btn-ghost   { background: none; }
+.btn-block   { width: 100%; }
+
+/* Modal */
+.modal {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(0,0,0,0.65);
+  display: none; align-items: flex-end; justify-content: center;
+}
+@media (min-width: 600px) { .modal { align-items: center; padding: 20px; } }
+.modal.open { display: flex; }
+.modal-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px 18px 0 0;
+  padding: 20px 18px calc(20px + env(safe-area-inset-bottom));
+  width: 100%; max-width: 520px;
+  max-height: 92dvh; overflow-y: auto;
+}
+@media (min-width: 600px) {
+  .modal-card { border-radius: 18px; padding-bottom: 20px; }
+}
+.modal-card h2 {
+  font-family: 'Bricolage Grotesque';
+  font-size: 21px; font-weight: 700;
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+.modal-card .hint {
+  color: var(--text-dim); font-size: 13px;
+  margin-bottom: 16px; line-height: 1.5;
+}
+.modal-actions { display: flex; gap: 8px; margin-top: 18px; }
+.modal-actions .btn { flex: 1; }
+
+label.field { display: block; margin-bottom: 14px; }
+label.field span {
+  display: block; font-size: 12px; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 0.5px;
+  margin-bottom: 6px; font-weight: 600;
+}
+input[type="text"], input[type="date"] {
+  width: 100%;
+  background: var(--card-hi);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 16px;
+  outline: none;
+}
+input:focus { border-color: var(--accent); }
+
+.list-scroll { max-height: 50vh; overflow-y: auto; margin: 0 -4px; padding: 0 4px; }
+
+/* New-turno pickrow */
+.row-pick {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 13px;
+  border-radius: 10px;
+  background: var(--card-hi);
+  border: 1px solid var(--border);
+  margin-bottom: 6px;
+  min-height: 52px;
+}
+.row-pick.checked {
+  background: rgba(34,211,238,0.12);
+  border-color: rgba(34,211,238,0.45);
+}
+.row-pick .check {
+  width: 22px; height: 22px; border-radius: 6px;
+  border: 2px solid var(--border);
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 14px;
+  color: #0a0e0a;
+}
+.row-pick.checked .check { background: var(--cyan); border-color: var(--cyan); }
+.row-pick .name { flex: 1; font-size: 15px; font-weight: 500; }
+.row-pick .meta { font-size: 11px; color: var(--gold); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Edit-turno row */
+.row-edit {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--card-hi);
+  border: 1px solid var(--border);
+  margin-bottom: 5px;
+}
+.row-edit.r-and-j { background: rgba(163,230,53,0.08); border-color: rgba(163,230,53,0.28); }
+.row-edit.only-r  { background: rgba(34,211,238,0.08); border-color: rgba(34,211,238,0.28); }
+.row-edit.only-j  { background: rgba(252,211,77,0.08); border-color: rgba(252,211,77,0.28); }
+.row-edit .name { flex: 1; font-size: 14px; font-weight: 500; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pill-toggle {
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 12px; font-weight: 700;
+  min-height: 40px;
+  flex-shrink: 0;
+}
+.pill-toggle.r-on { background: var(--cyan);  border-color: var(--cyan);  color: #0a0e0a; }
+.pill-toggle.j-on { background: var(--accent); border-color: var(--accent); color: #0a0e0a; }
+
+.summary {
+  padding: 11px 14px;
+  background: var(--card-hi);
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+/* Jugadores */
+.jug-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px 8px 14px;
+  border-radius: 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  margin-bottom: 6px;
+  min-height: 54px;
+}
+.jug-row .name-edit {
+  flex: 1; background: transparent; border: none;
+  font-size: 15px; padding: 6px 8px; border-radius: 6px;
+  min-width: 0;
+}
+.jug-row .name-edit:focus { background: var(--card-hi); }
+.badge {
+  font-size: 11px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+.b-jug  { background: rgba(163,230,53,0.15); color: var(--accent); }
+.b-pos  { background: rgba(34,211,238,0.15); color: var(--cyan); }
+.b-neg  { background: rgba(239,68,68,0.15);  color: var(--danger); }
+.b-zero { background: var(--card-hi); color: var(--text-dim); }
+.jug-row .x {
+  background: none; border: none;
+  color: var(--text-dim);
+  font-size: 22px; line-height: 1;
+  padding: 6px 10px;
+  min-height: 44px;
+  flex-shrink: 0;
+}
+
+/* Balance */
+.bal-table {
+  width: 100%; border-collapse: collapse;
+  background: var(--card);
+  border-radius: var(--radius);
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+.bal-table th, .bal-table td {
+  padding: 11px 12px;
+  text-align: left;
+  font-size: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.bal-table tr:last-child td { border-bottom: none; }
+.bal-table th {
+  background: var(--card-hi);
+  color: var(--text-dim); font-weight: 600;
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px;
+}
+.bal-table td.num, .bal-table th.num { text-align: right; }
+.bal-table .pos { color: var(--cyan); font-weight: 700; }
+.bal-table .neg { color: var(--danger); font-weight: 700; }
+.bal-summary {
+  margin-top: 12px;
+  padding: 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 1.8;
+}
+.bal-summary strong { color: var(--text); font-weight: 700; }
+
+/* Log */
+.log-row {
+  padding: 12px 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 6px;
+}
+.log-row .head {
+  display: flex; align-items: baseline; gap: 8px;
+  margin-bottom: 4px;
+}
+.log-row .who { font-weight: 700; color: var(--accent); font-size: 13px; }
+.log-row .when { color: var(--text-dim); font-size: 12px; }
+.log-row .what { font-size: 14px; color: var(--text); line-height: 1.45; }
+
+/* Config-missing screen */
+.config-warn {
+  padding: 40px 22px;
+  max-width: 520px; margin: 0 auto;
+}
+.config-warn h1 {
+  font-family: 'Bricolage Grotesque';
+  color: var(--accent);
+  font-size: 24px; margin-bottom: 12px;
+}
+.config-warn p { color: var(--text-dim); line-height: 1.6; margin-bottom: 10px; font-size: 14px; }
+.config-warn code {
+  background: var(--card-hi);
+  padding: 2px 7px; border-radius: 5px;
+  color: var(--accent);
+  font-size: 13px;
+}
+.config-warn pre {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 12px;
+  border-radius: 10px;
+  overflow-x: auto;
+  font-size: 12px;
+  color: var(--text);
+  margin-top: 10px;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="conn" id="conn" title="Estado de conexión"></span>
+  <h1>Padel · Turnos</h1>
+  <button id="name-badge" type="button">Tu nombre</button>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button data-tab="turnos" class="active">Turnos</button>
+  <button data-tab="jugadores">Jugadores</button>
+  <button data-tab="balance">Balance</button>
+  <button data-tab="log">Log</button>
+</nav>
+
+<main>
+  <section data-tab="turnos">
+    <div id="list-turnos"></div>
+  </section>
+  <section data-tab="jugadores" hidden>
+    <div id="list-jugadores"></div>
+  </section>
+  <section data-tab="balance" hidden>
+    <div id="list-balance"></div>
+  </section>
+  <section data-tab="log" hidden>
+    <div id="list-log"></div>
+  </section>
+</main>
+
+<button class="fab" id="fab" type="button">+ Nuevo turno</button>
+
+<!-- Modal: nombre -->
+<div class="modal" id="modal-name">
+  <div class="modal-card">
+    <h2 id="modal-name-title">¿Cómo te llamás?</h2>
+    <p class="hint" id="modal-name-hint">Va a quedar en los logs de cambios para que sepamos quién editó qué.</p>
+    <label class="field">
+      <span>Nombre</span>
+      <input type="text" id="input-name" autocomplete="off" maxlength="40" placeholder="Ej: Mario">
+    </label>
+    <div class="modal-actions">
+      <button class="btn btn-primary btn-block" id="btn-name-save" type="button">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: turno (crear / editar) -->
+<div class="modal" id="modal-turno">
+  <div class="modal-card">
+    <h2 id="modal-turno-title">Nuevo turno</h2>
+    <p class="hint" id="modal-turno-hint"></p>
+    <label class="field">
+      <span>Fecha</span>
+      <input type="date" id="input-turno-date">
+    </label>
+    <div class="summary" id="modal-turno-summary" style="display:none"></div>
+    <div class="list-scroll" id="input-turno-list"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="btn-turno-cancel" type="button">Cancelar</button>
+      <button class="btn btn-primary" id="btn-turno-save" type="button">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: confirm -->
+<div class="modal" id="modal-confirm">
+  <div class="modal-card">
+    <h2 id="modal-confirm-title">¿Confirmás?</h2>
+    <p class="hint" id="modal-confirm-hint"></p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="btn-confirm-no" type="button">Cancelar</button>
+      <button class="btn btn-danger" id="btn-confirm-yes" type="button">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+<script>
+'use strict';
+
+// ============================================================
+// FIREBASE CONFIG — pegá tus valores acá
+// ============================================================
+const firebaseConfig = {
+  apiKey:            "PEGAR_ACA",
+  authDomain:        "PEGAR_ACA",
+  databaseURL:       "PEGAR_ACA",
+  projectId:         "PEGAR_ACA",
+  storageBucket:     "PEGAR_ACA",
+  messagingSenderId: "PEGAR_ACA",
+  appId:             "PEGAR_ACA"
+};
+
+const DEFAULT_JUGADORES = [
+  "Agustín", "Alberto", "Daniel Tano", "Enrique Rodríguez",
+  "Gustavo Sánchez", "Gustavo Sasia", "Hernán Tugores", "Humberto Beto",
+  "Jorge Blanco", "José", "Juan Carlos Subiros", "Juan Fernández",
+  "JuGar", "Marcelo Di Perna", "Mariano Monjeau", "Mario de Funes",
+  "Mario Sánchez", "Pedro", "Sergio Berlingieri"
+];
+
+// Bail out early if config not pasted yet
+if (firebaseConfig.apiKey === "PEGAR_ACA") {
+  document.body.innerHTML = `
+    <div class="config-warn">
+      <h1>Falta configurar Firebase</h1>
+      <p>Pegá tu <code>firebaseConfig</code> en <code>index.html</code> (buscá <code>PEGAR_ACA</code>).</p>
+      <p>Lo conseguís en Firebase Console → Project settings → General → Your apps → Web app.</p>
+      <p>Después aplicá las reglas de <code>firebase-rules.json</code> en Database → Rules.</p>
+      <pre>const firebaseConfig = {
+  apiKey:            "AIza...",
+  authDomain:        "tu-proyecto.firebaseapp.com",
+  databaseURL:       "https://tu-proyecto-default-rtdb.firebaseio.com",
+  projectId:         "tu-proyecto",
+  storageBucket:     "tu-proyecto.appspot.com",
+  messagingSenderId: "123456789",
+  appId:             "1:123456789:web:abc..."
+};</pre>
+    </div>`;
+  throw new Error("firebaseConfig placeholder — pegá los valores reales.");
+}
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ============================================================
+// STATE
+// ============================================================
+const state = {
+  jugadores: {},
+  turnos: {},
+  audit: [],
+  deviceId: null,
+  deviceName: null,
+  activeTab: 'turnos',
+  expandedTurno: null
+};
+let firstJugFire = true;
+let seedingInFlight = false;
+
+// ============================================================
+// HELPERS
+// ============================================================
+function uuid() {
+  if (crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+const DOW = ['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB'];
+function formatDateShort(iso) {
+  if (!iso) return { dow: '???', dm: '??/??' };
+  const [y, m, d] = iso.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  return {
+    dow: DOW[dt.getDay()],
+    dm: `${String(d).padStart(2,'0')}/${String(m).padStart(2,'0')}`
+  };
+}
+function todayISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function jidName(jid) {
+  return state.jugadores[jid]?.nombre || `(jugador eliminado)`;
+}
+
+// ============================================================
+// DEVICE / IDENTITY
+// ============================================================
+function initDevice() {
+  let did = localStorage.getItem('padel.deviceId');
+  if (!did) {
+    did = uuid();
+    localStorage.setItem('padel.deviceId', did);
+  }
+  state.deviceId = did;
+  state.deviceName = localStorage.getItem('padel.deviceName') || null;
+  renderNameBadge();
+  if (!state.deviceName) openNameModal(true);
+}
+
+function renderNameBadge() {
+  document.getElementById('name-badge').textContent = state.deviceName || 'Tu nombre';
+}
+
+function openNameModal(firstTime) {
+  const modal = document.getElementById('modal-name');
+  const input = document.getElementById('input-name');
+  input.value = firstTime ? '' : (state.deviceName || '');
+  document.getElementById('modal-name-title').textContent = firstTime ? '¿Cómo te llamás?' : 'Cambiar nombre';
+  document.getElementById('modal-name-hint').textContent = firstTime
+    ? 'Va a quedar en los logs de cambios para que sepamos quién editó qué.'
+    : 'Cambiá el nombre que aparece en los logs.';
+  modal.classList.add('open');
+  setTimeout(() => input.focus(), 80);
+}
+
+async function saveName(raw) {
+  const name = (raw || '').trim();
+  if (!name) return;
+  const before = state.deviceName;
+  state.deviceName = name;
+  localStorage.setItem('padel.deviceName', name);
+  renderNameBadge();
+  document.getElementById('modal-name').classList.remove('open');
+
+  const updates = { name };
+  if (!before) updates.firstSeen = firebase.database.ServerValue.TIMESTAMP;
+  await db.ref(`devices/${state.deviceId}`).update(updates);
+  await recordChange(
+    'set_device_name',
+    'device',
+    state.deviceId,
+    before ? { name: before } : null,
+    { name }
+  );
+}
+
+// ============================================================
+// AUDIT
+// ============================================================
+async function recordChange(action, entity, entityId, before, after) {
+  const ref = db.ref('audit').push();
+  try {
+    await ref.set({
+      ts: firebase.database.ServerValue.TIMESTAMP,
+      action,
+      entity,
+      entity_id: entityId,
+      before: before === undefined ? null : before,
+      after:  after  === undefined ? null : after,
+      device: state.deviceId,
+      device_name: state.deviceName || 'anónimo'
+    });
+  } catch (err) {
+    console.error('audit write failed', err);
+  }
+}
+
+// ============================================================
+// FIREBASE LISTENERS
+// ============================================================
+function attachListeners() {
+  db.ref('.info/connected').on('value', s => {
+    document.getElementById('conn').classList.toggle('online', s.val() === true);
+  });
+
+  db.ref('jugadores').on('value', s => {
+    state.jugadores = s.val() || {};
+    if (firstJugFire) {
+      firstJugFire = false;
+      if (Object.keys(state.jugadores).length === 0 && !seedingInFlight) {
+        seedingInFlight = true;
+        seedJugadores();
+      }
+    }
+    renderJugadores();
+    renderBalance();
+    renderTurnos();
+  });
+
+  db.ref('turnos').on('value', s => {
+    state.turnos = s.val() || {};
+    renderTurnos();
+    renderBalance();
+  });
+
+  db.ref('audit').limitToLast(300).on('value', s => {
+    const v = s.val() || {};
+    state.audit = Object.entries(v)
+      .map(([k, e]) => ({ key: k, ...e }))
+      .sort((a, b) => (b.ts || 0) - (a.ts || 0));
+    renderLog();
+  });
+}
+
+async function seedJugadores() {
+  const updates = {};
+  for (const nombre of DEFAULT_JUGADORES) {
+    const id = uuid();
+    updates[id] = { id, nombre };
+  }
+  await db.ref('jugadores').update(updates);
+}
+
+// ============================================================
+// COMPUTED
+// ============================================================
+function computeBalances() {
+  const bal = {};
+  for (const jid of Object.keys(state.jugadores)) {
+    bal[jid] = { jug: 0, res: 0, balance: 0 };
+  }
+  for (const tid of Object.keys(state.turnos)) {
+    const t = state.turnos[tid];
+    const reservados = new Set(t.reservados || []);
+    const jugaron = new Set(t.jugaron || []);
+    for (const jid of reservados) {
+      if (!bal[jid]) bal[jid] = { jug: 0, res: 0, balance: 0 };
+      bal[jid].res++;
+      if (!jugaron.has(jid)) bal[jid].balance++;   // reservó pero no jugó → +1
+    }
+    for (const jid of jugaron) {
+      if (!bal[jid]) bal[jid] = { jug: 0, res: 0, balance: 0 };
+      bal[jid].jug++;
+      if (!reservados.has(jid)) bal[jid].balance--; // jugó sin reservar → -1
+    }
+  }
+  return bal;
+}
+
+function turnoStats(t) {
+  const r = new Set(t.reservados || []);
+  const j = new Set(t.jugaron || []);
+  let cred = 0, deb = 0;
+  for (const id of r) if (!j.has(id)) cred++;
+  for (const id of j) if (!r.has(id)) deb++;
+  return { jug: j.size, cred, deb };
+}
+
+// ============================================================
+// RENDER: TURNOS
+// ============================================================
+function renderTurnos() {
+  const root = document.getElementById('list-turnos');
+  const turnos = Object.values(state.turnos)
+    .sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''));
+
+  if (turnos.length === 0) {
+    root.innerHTML = `<div class="empty">No hay turnos todavía.<br>Tocá <strong>+ Nuevo turno</strong> para crear el primero.</div>`;
+    return;
+  }
+
+  root.innerHTML = turnos.map(t => {
+    const { dow, dm } = formatDateShort(t.fecha);
+    const { jug, cred, deb } = turnoStats(t);
+    const isOpen = state.expandedTurno === t.id;
+    const rSet = new Set(t.reservados || []);
+    const jSet = new Set(t.jugaron || []);
+    const ids = Array.from(new Set([...(t.reservados || []), ...(t.jugaron || [])]));
+    ids.sort((a, b) => (jidName(a) || '').localeCompare(jidName(b) || '', 'es'));
+
+    const chips = ids.map(id => {
+      const name = escapeHtml(jidName(id));
+      const r = rSet.has(id), j = jSet.has(id);
+      if (r && j) return `<span class="chip">${name}</span>`;
+      if (r)      return `<span class="chip cred">${name} ⊘</span>`;
+      return        `<span class="chip deb">${name} ★</span>`;
+    }).join('');
+
+    return `<div class="card turno${isOpen ? ' open' : ''}" data-id="${t.id}">
+      <div class="turno-head" data-action="toggle">
+        <div class="turno-date">
+          <span class="day">${dow}</span>
+          <span class="num">${dm}</span>
+        </div>
+        <span class="pill pill-jug">${jug} jug</span>
+        ${cred ? `<span class="pill pill-cred">+${cred}</span>` : ''}
+        ${deb  ? `<span class="pill pill-deb">−${deb}</span>` : ''}
+      </div>
+      <div class="turno-body">
+        <div class="chips">${chips || '<span class="hint" style="color:var(--text-dim);font-size:13px">sin jugadores</span>'}</div>
+        <div class="turno-actions">
+          <button class="btn btn-primary" data-action="edit">Editar</button>
+          <button class="btn btn-danger"  data-action="delete">Eliminar</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  root.querySelectorAll('.turno').forEach(el => {
+    const tid = el.dataset.id;
+    el.querySelector('[data-action="toggle"]').addEventListener('click', () => {
+      state.expandedTurno = state.expandedTurno === tid ? null : tid;
+      renderTurnos();
+    });
+    const editBtn = el.querySelector('[data-action="edit"]');
+    if (editBtn) editBtn.addEventListener('click', e => { e.stopPropagation(); openTurnoModal(tid); });
+    const delBtn = el.querySelector('[data-action="delete"]');
+    if (delBtn) delBtn.addEventListener('click', e => { e.stopPropagation(); confirmDeleteTurno(tid); });
+  });
+}
+
+// ============================================================
+// MODAL: CREAR / EDITAR TURNO
+// ============================================================
+function openTurnoModal(tid) {
+  const isNew = !tid;
+  const t = isNew ? null : state.turnos[tid];
+  if (!isNew && !t) return;
+
+  const modal = document.getElementById('modal-turno');
+  const title = document.getElementById('modal-turno-title');
+  const hint  = document.getElementById('modal-turno-hint');
+  const dateInput = document.getElementById('input-turno-date');
+  const list  = document.getElementById('input-turno-list');
+  const summary = document.getElementById('modal-turno-summary');
+
+  title.textContent = isNew ? 'Nuevo turno' : 'Editar turno';
+  hint.textContent  = isNew
+    ? 'Tocá los jugadores que reservaron. Esos son los que pagan.'
+    : 'Reservó = se anotó. Jugó = jugó realmente. La diferencia genera créditos/débitos.';
+  dateInput.value = isNew ? todayISO() : t.fecha;
+
+  const balances = computeBalances();
+  const jugadores = Object.values(state.jugadores)
+    .sort((a, b) => (a.nombre || '').localeCompare(b.nombre || '', 'es'));
+
+  let reservados, jugaron;
+  if (isNew) {
+    reservados = new Set(
+      jugadores.filter(j => (balances[j.id]?.balance || 0) < 0).map(j => j.id)
+    );
+    jugaron = new Set(reservados);
+  } else {
+    reservados = new Set(t.reservados || []);
+    jugaron    = new Set(t.jugaron || []);
+  }
+
+  function rerender() {
+    list.innerHTML = jugadores.map(j => {
+      const r  = reservados.has(j.id);
+      const ju = jugaron.has(j.id);
+      if (isNew) {
+        const deudor = (balances[j.id]?.balance || 0) < 0;
+        return `<div class="row-pick ${r ? 'checked' : ''}" data-id="${j.id}">
+          <span class="check">${r ? '✓' : ''}</span>
+          <span class="name">${escapeHtml(j.nombre)}</span>
+          ${deudor ? `<span class="meta">debe ${-balances[j.id].balance}</span>` : ''}
+        </div>`;
+      } else {
+        const cls = (r && ju) ? 'r-and-j' : (r ? 'only-r' : (ju ? 'only-j' : ''));
+        return `<div class="row-edit ${cls}" data-id="${j.id}">
+          <span class="name">${escapeHtml(j.nombre)}</span>
+          <button class="pill-toggle ${r  ? 'r-on' : ''}" data-toggle="r" type="button">Reservó</button>
+          <button class="pill-toggle ${ju ? 'j-on' : ''}" data-toggle="j" type="button">Jugó</button>
+        </div>`;
+      }
+    }).join('');
+
+    if (!isNew) {
+      let cred = 0, deb = 0;
+      for (const id of reservados) if (!jugaron.has(id)) cred++;
+      for (const id of jugaron)    if (!reservados.has(id)) deb++;
+      summary.textContent = `${jugaron.size} jugaron · +${cred} crédito · −${deb} sumados`;
+      summary.style.display = 'block';
+    } else {
+      summary.style.display = 'none';
+    }
+
+    list.querySelectorAll('[data-id]').forEach(row => {
+      const id = row.dataset.id;
+      if (isNew) {
+        row.addEventListener('click', () => {
+          if (reservados.has(id)) { reservados.delete(id); jugaron.delete(id); }
+          else { reservados.add(id); jugaron.add(id); }
+          rerender();
+        });
+      } else {
+        row.querySelectorAll('[data-toggle]').forEach(btn => {
+          btn.addEventListener('click', e => {
+            e.stopPropagation();
+            const kind = btn.dataset.toggle;
+            if (kind === 'r') { reservados.has(id) ? reservados.delete(id) : reservados.add(id); }
+            else              { jugaron.has(id)    ? jugaron.delete(id)    : jugaron.add(id); }
+            rerender();
+          });
+        });
+      }
+    });
+  }
+  rerender();
+
+  modal.classList.add('open');
+
+  document.getElementById('btn-turno-save').onclick = async () => {
+    const fecha = dateInput.value;
+    if (!fecha) return;
+    const saveBtn = document.getElementById('btn-turno-save');
+    saveBtn.disabled = true;
+    try {
+      if (isNew) {
+        const id = uuid();
+        const after = {
+          id,
+          fecha,
+          reservados: [...reservados],
+          jugaron: [...jugaron],
+          createdAt: Date.now()
+        };
+        await recordChange('create_turno', 'turno', id, null, after);
+        await db.ref(`turnos/${id}`).set(after);
+      } else {
+        const before = JSON.parse(JSON.stringify(t));
+        const after = {
+          id: t.id,
+          fecha,
+          reservados: [...reservados],
+          jugaron: [...jugaron],
+          createdAt: t.createdAt || Date.now()
+        };
+        await recordChange('edit_turno', 'turno', t.id, before, after);
+        await db.ref(`turnos/${t.id}`).set(after);
+      }
+      modal.classList.remove('open');
+    } finally {
+      saveBtn.disabled = false;
+    }
+  };
+  document.getElementById('btn-turno-cancel').onclick = () => modal.classList.remove('open');
+}
+
+function confirmDeleteTurno(tid) {
+  const t = state.turnos[tid];
+  if (!t) return;
+  const { dm } = formatDateShort(t.fecha);
+  openConfirm(`¿Eliminar turno del ${dm}?`, 'Esta acción no se puede deshacer.', async () => {
+    const before = JSON.parse(JSON.stringify(t));
+    await recordChange('delete_turno', 'turno', tid, before, null);
+    await db.ref(`turnos/${tid}`).remove();
+  });
+}
+
+// ============================================================
+// MODAL: CONFIRM
+// ============================================================
+function openConfirm(title, hint, onYes) {
+  const modal = document.getElementById('modal-confirm');
+  document.getElementById('modal-confirm-title').textContent = title;
+  document.getElementById('modal-confirm-hint').textContent = hint || '';
+  modal.classList.add('open');
+  document.getElementById('btn-confirm-yes').onclick = async () => {
+    modal.classList.remove('open');
+    try { await onYes(); } catch (err) { console.error(err); alert('Falló: ' + err.message); }
+  };
+  document.getElementById('btn-confirm-no').onclick = () => modal.classList.remove('open');
+}
+
+// ============================================================
+// RENDER: JUGADORES
+// ============================================================
+function renderJugadores() {
+  const root = document.getElementById('list-jugadores');
+  const bal = computeBalances();
+  const jugs = Object.values(state.jugadores)
+    .sort((a, b) => (a.nombre || '').localeCompare(b.nombre || '', 'es'));
+
+  root.innerHTML = jugs.map(j => {
+    const b = bal[j.id] || { jug: 0, balance: 0 };
+    const balCls = b.balance > 0 ? 'b-pos' : (b.balance < 0 ? 'b-neg' : 'b-zero');
+    const balTxt = b.balance > 0 ? `+${b.balance}` : (b.balance < 0 ? `${b.balance}` : '0');
+    return `<div class="jug-row" data-id="${j.id}">
+      <input class="name-edit" type="text" value="${escapeHtml(j.nombre)}" data-orig="${escapeHtml(j.nombre)}" autocomplete="off">
+      <span class="badge b-jug">${b.jug} jug</span>
+      <span class="badge ${balCls}">${balTxt}</span>
+      <button class="x" data-action="del" type="button" aria-label="Eliminar">×</button>
+    </div>`;
+  }).join('') + `<button class="btn btn-primary btn-block" id="btn-add-jug" type="button" style="margin-top:10px">+ Agregar jugador</button>`;
+
+  root.querySelectorAll('.jug-row').forEach(row => {
+    const id = row.dataset.id;
+    const input = row.querySelector('.name-edit');
+    input.addEventListener('blur', async () => {
+      const orig = input.dataset.orig;
+      const nv = input.value.trim();
+      if (!nv) { input.value = orig; return; }
+      if (nv === orig) return;
+      const before = { ...state.jugadores[id] };
+      const after  = { ...before, nombre: nv };
+      input.dataset.orig = nv;
+      await recordChange('edit_jugador', 'jugador', id, before, after);
+      await db.ref(`jugadores/${id}`).update({ nombre: nv });
+    });
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+      if (e.key === 'Escape') { input.value = input.dataset.orig; input.blur(); }
+    });
+    row.querySelector('[data-action="del"]').addEventListener('click', () => {
+      const j = state.jugadores[id];
+      if (!j) return;
+      openConfirm(`¿Eliminar a ${j.nombre}?`, 'Va a quedar en los turnos viejos pero no aparecerá en los nuevos.', async () => {
+        const before = { ...j };
+        await recordChange('delete_jugador', 'jugador', id, before, null);
+        await db.ref(`jugadores/${id}`).remove();
+      });
+    });
+  });
+
+  document.getElementById('btn-add-jug').addEventListener('click', async () => {
+    const nombre = prompt('Nombre del jugador:');
+    if (!nombre || !nombre.trim()) return;
+    const id = uuid();
+    const after = { id, nombre: nombre.trim() };
+    await recordChange('create_jugador', 'jugador', id, null, after);
+    await db.ref(`jugadores/${id}`).set(after);
+  });
+}
+
+// ============================================================
+// RENDER: BALANCE
+// ============================================================
+function renderBalance() {
+  const root = document.getElementById('list-balance');
+  const bal = computeBalances();
+  const rows = Object.entries(bal).map(([jid, b]) => ({
+    nombre: state.jugadores[jid]?.nombre || '(eliminado)',
+    ...b
+  })).sort((a, b) => a.balance - b.balance || a.nombre.localeCompare(b.nombre, 'es'));
+
+  let totalRes = 0, totalJug = 0, totalCred = 0, totalDeb = 0;
+  for (const r of rows) {
+    totalRes += r.res; totalJug += r.jug;
+    if (r.balance > 0) totalCred += r.balance;
+    if (r.balance < 0) totalDeb  += -r.balance;
+  }
+  const nTurnos = Object.keys(state.turnos).length;
+
+  root.innerHTML = `
+    <table class="bal-table">
+      <thead>
+        <tr><th>Jugador</th><th class="num">RES</th><th class="num">JUG</th><th class="num">BAL</th></tr>
+      </thead>
+      <tbody>
+        ${rows.map(r => {
+          const cls = r.balance > 0 ? 'pos' : (r.balance < 0 ? 'neg' : '');
+          const v   = r.balance > 0 ? `+${r.balance}` : r.balance;
+          return `<tr>
+            <td>${escapeHtml(r.nombre)}</td>
+            <td class="num">${r.res}</td>
+            <td class="num">${r.jug}</td>
+            <td class="num ${cls}">${v}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    <div class="bal-summary">
+      Turnos: <strong>${nTurnos}</strong> · Reservas: <strong>${totalRes}</strong> · Jugadas: <strong>${totalJug}</strong><br>
+      Créditos totales: <strong style="color:var(--cyan)">+${totalCred}</strong> · Débitos totales: <strong style="color:var(--gold)">−${totalDeb}</strong>
+    </div>`;
+}
+
+// ============================================================
+// RENDER: LOG
+// ============================================================
+function relativeTime(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  const now = Date.now();
+  const diff = (now - ts) / 1000;
+  if (diff < 60) return 'hace instantes';
+  if (diff < 3600) return `hace ${Math.floor(diff/60)} min`;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const yest  = new Date(today); yest.setDate(yest.getDate() - 1);
+  const dDay  = new Date(d); dDay.setHours(0,0,0,0);
+  const hhmm = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  if (dDay.getTime() === today.getTime()) return `hoy ${hhmm}`;
+  if (dDay.getTime() === yest.getTime())  return `ayer ${hhmm}`;
+  return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')} ${hhmm}`;
+}
+
+function describeAction(e) {
+  const a = e.action;
+  if (a === 'create_turno') {
+    const t = e.after || {};
+    const { dm } = formatDateShort(t.fecha);
+    const n = (t.reservados || []).length;
+    return `Creó turno del ${dm} con ${n} reservado${n === 1 ? '' : 's'}`;
+  }
+  if (a === 'edit_turno') {
+    const before = e.before || {}, after = e.after || {};
+    const { dm }  = formatDateShort(after.fecha);
+    const parts = [];
+    if (before.fecha && after.fecha && before.fecha !== after.fecha) {
+      const { dm: dmB } = formatDateShort(before.fecha);
+      parts.push(`cambió fecha ${dmB} → ${dm}`);
+    }
+    const diff = (a1, a2, label) => {
+      const s1 = new Set(a1 || []), s2 = new Set(a2 || []);
+      const added   = [...s2].filter(x => !s1.has(x));
+      const removed = [...s1].filter(x => !s2.has(x));
+      if (added.length) {
+        parts.push(`agregó ${label === 'reservado' ? 'a' : ''} ${added.map(jidName).join(', ')} como ${label}${added.length > 1 ? 's' : ''}`);
+      }
+      if (removed.length) {
+        parts.push(`quitó ${removed.map(jidName).join(', ')} de ${label}s`);
+      }
+    };
+    diff(before.reservados, after.reservados, 'reservado');
+    diff(before.jugaron,    after.jugaron,    'sumado');
+    return `Editó turno ${dm}: ${parts.join(' · ') || 'sin cambios'}`;
+  }
+  if (a === 'delete_turno') {
+    const { dm } = formatDateShort(e.before?.fecha);
+    return `Eliminó turno ${dm}`;
+  }
+  if (a === 'create_jugador') return `Agregó jugador "${e.after?.nombre || ''}"`;
+  if (a === 'edit_jugador')   return `Cambió nombre "${e.before?.nombre || ''}" → "${e.after?.nombre || ''}"`;
+  if (a === 'delete_jugador') return `Eliminó jugador "${e.before?.nombre || ''}"`;
+  if (a === 'set_device_name') {
+    if (!e.before) return `Se identificó como "${e.after?.name || ''}"`;
+    return `Cambió su nombre "${e.before?.name || ''}" → "${e.after?.name || ''}"`;
+  }
+  return a;
+}
+
+function renderLog() {
+  const root = document.getElementById('list-log');
+  if (!state.audit.length) {
+    root.innerHTML = `<div class="empty">Sin actividad todavía.</div>`;
+    return;
+  }
+  root.innerHTML = state.audit.map(e => `<div class="log-row">
+    <div class="head"><span class="who">${escapeHtml(e.device_name || 'anónimo')}</span><span class="when">${relativeTime(e.ts)}</span></div>
+    <div class="what">${escapeHtml(describeAction(e))}</div>
+  </div>`).join('');
+}
+
+// ============================================================
+// TABS
+// ============================================================
+function setTab(tab) {
+  state.activeTab = tab;
+  document.querySelectorAll('nav.tabs button').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+  document.querySelectorAll('main section').forEach(s => {
+    s.hidden = s.dataset.tab !== tab;
+  });
+  document.getElementById('fab').hidden = tab !== 'turnos';
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('nav.tabs button').forEach(b => {
+    b.addEventListener('click', () => setTab(b.dataset.tab));
+  });
+  setTab('turnos');
+
+  document.getElementById('name-badge').addEventListener('click', () => openNameModal(false));
+  document.getElementById('btn-name-save').addEventListener('click', () => {
+    saveName(document.getElementById('input-name').value);
+  });
+  document.getElementById('input-name').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); saveName(e.target.value); }
+  });
+
+  document.getElementById('fab').addEventListener('click', () => openTurnoModal(null));
+
+  document.querySelectorAll('.modal').forEach(m => {
+    m.addEventListener('click', e => {
+      if (e.target !== m) return;
+      if (m.id === 'modal-name' && !state.deviceName) return; // forzar nombre la primera vez
+      m.classList.remove('open');
+    });
+  });
+
+  initDevice();
+  attachListeners();
+});
+</script>
+</body>
+</html>
