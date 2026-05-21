@@ -721,6 +721,18 @@ function turnoStats(t) {
   return { jug: j.size, cred, deb };
 }
 
+// Orden: más jugadas primero, después alfabético. Los de 0 jugadas al final, también alfabéticos.
+function sortByPlays(jugadores, balances) {
+  return [...jugadores].sort((a, b) => {
+    const ja = balances[a.id]?.jug || 0;
+    const jb = balances[b.id]?.jug || 0;
+    if (ja === 0 && jb > 0) return 1;
+    if (jb === 0 && ja > 0) return -1;
+    if (ja !== jb) return jb - ja;
+    return (a.nombre || '').localeCompare(b.nombre || '', 'es');
+  });
+}
+
 // ============================================================
 // RENDER: TURNOS
 // ============================================================
@@ -806,8 +818,7 @@ function openTurnoModal(tid) {
   dateInput.value = isNew ? todayISO() : t.fecha;
 
   const balances = computeBalances();
-  const jugadores = Object.values(state.jugadores)
-    .sort((a, b) => (a.nombre || '').localeCompare(b.nombre || '', 'es'));
+  const jugadores = sortByPlays(Object.values(state.jugadores), balances);
 
   let reservados, jugaron;
   if (isNew) {
@@ -945,8 +956,7 @@ function openConfirm(title, hint, onYes) {
 function renderJugadores() {
   const root = document.getElementById('list-jugadores');
   const bal = computeBalances();
-  const jugs = Object.values(state.jugadores)
-    .sort((a, b) => (a.nombre || '').localeCompare(b.nombre || '', 'es'));
+  const jugs = sortByPlays(Object.values(state.jugadores), bal);
 
   root.innerHTML = jugs.map(j => {
     const b = bal[j.id] || { jug: 0, balance: 0 };
