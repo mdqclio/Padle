@@ -1,11 +1,67 @@
 {
   "rules": {
-    "jugadores": { ".read": true, ".write": true },
-    "turnos":    { ".read": true, ".write": true },
-    "devices":   { ".read": true, ".write": true },
+    "//": "ADVERTENCIA DE SEGURIDAD: esta app NO usa Firebase Auth (la identidad es un deviceId en localStorage, falsificable). Por eso .read/.write siguen abiertos (true): poner 'auth != null' romperia la app entera. Estas reglas .validate NO dan aislamiento por usuario ni autorizacion real: solo fuerzan la FORMA y los TIPOS de los datos para que no se pueda escribir basura, estructuras inesperadas ni payloads gigantes, y mantienen /audit append-only. Un atacante anonimo todavia puede leer todo, sobrescribir nodos validos y borrar. El cierre real requiere Firebase Auth + reglas por uid (ver Padle-REMEDIACION.md).",
+
+    ".read": false,
+    ".write": false,
+
+    "jugadores": {
+      ".read": true,
+      ".write": true,
+      "$jid": {
+        ".validate": "newData.hasChildren(['id','nombre'])",
+        "id": { ".validate": "newData.isString() && newData.val().length <= 64 && newData.val() == $jid" },
+        "nombre": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 80" },
+        "$other": { ".validate": false }
+      }
+    },
+
+    "turnos": {
+      ".read": true,
+      ".write": true,
+      "$tid": {
+        ".validate": "newData.hasChildren(['id','fecha'])",
+        "id": { ".validate": "newData.isString() && newData.val().length <= 64 && newData.val() == $tid" },
+        "fecha": { ".validate": "newData.isString() && newData.val().length <= 32" },
+        "createdAt": { ".validate": "newData.isNumber()" },
+        "reservados": {
+          ".validate": "newData.hasChildren() || newData.val() == null",
+          "$idx": { ".validate": "newData.isString() && newData.val().length <= 64" }
+        },
+        "jugaron": {
+          ".validate": "newData.hasChildren() || newData.val() == null",
+          "$idx": { ".validate": "newData.isString() && newData.val().length <= 64" }
+        },
+        "$other": { ".validate": false }
+      }
+    },
+
+    "devices": {
+      ".read": true,
+      ".write": true,
+      "$did": {
+        ".validate": "newData.hasChild('name')",
+        "name": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 80" },
+        "firstSeen": { ".validate": "newData.isNumber()" },
+        "$other": { ".validate": false }
+      }
+    },
+
     "audit": {
       ".read": true,
-      "$eventId": { ".write": "!data.exists()" }
+      "$eventId": {
+        ".write": "!data.exists()",
+        ".validate": "newData.hasChildren(['ts','action','entity','device'])",
+        "ts": { ".validate": "newData.isNumber()" },
+        "action": { ".validate": "newData.isString() && newData.val().length <= 64" },
+        "entity": { ".validate": "newData.isString() && newData.val().length <= 64" },
+        "entity_id": { ".validate": "newData.isString() && newData.val().length <= 64" },
+        "device": { ".validate": "newData.isString() && newData.val().length <= 64" },
+        "device_name": { ".validate": "newData.isString() && newData.val().length <= 80" },
+        "before": { ".validate": true },
+        "after": { ".validate": true },
+        "$other": { ".validate": false }
+      }
     }
   }
 }
